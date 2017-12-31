@@ -1,0 +1,4 @@
+scapy-python3
+netifaces
+requests
+maxminddb-geolite2
