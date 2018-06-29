@@ -1,11 +1,7 @@
-import netifaces
-import os
 import threading
-import time
-import sys
 import datetime
-
-from geolite2 import geolite2
+import netifaces
+from misc import locate_ip
 from scapy.all import *
 
 conf.verb = 0
@@ -68,7 +64,6 @@ class Sniffer:
         self.config = config
         self.target = target
         self.dns_cache = {}
-        self.reader = geolite2.reader()
 
     def sniff(self):
         bpf_filter = 'ip host {} and ((udp and port 53) or (tcp[0xd]&2=2))'.format(self.target.ip)
@@ -97,16 +92,7 @@ class Sniffer:
 
     def print_location(self, pkt):
         ip = pkt[IP].dst
-        info = self.reader.get(ip)
-        location = '-'
-        try:
-            location = info['country']['names']['en']
-            location = location + ', ' + info['subdivisions'][0]['names']['en']
-            location = location + ', ' + info['city']['names']['en']
-        except TypeError:
-            location = 'Private IP'
-        except KeyError:
-            pass
+        location = locate_ip(ip)
 
         try:
             hostname = self.dns_cache[ip]
@@ -194,7 +180,6 @@ def main():
                 wrpcap(name, packets)
             except IndexError:
                 print("[!] No packets saved")
-        geolite2.close()
         mitm.stop()
 
 

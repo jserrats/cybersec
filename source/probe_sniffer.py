@@ -1,5 +1,5 @@
 from iface_manager import start_mon_iface, stop_mon_iface
-import csv
+from misc import oui_dict
 from binascii import hexlify
 from datetime import datetime
 from scapy.layers.dot11 import Dot11, Dot11ProbeReq, Dot11Elt, RadioTap
@@ -22,7 +22,7 @@ class ProbePacket:
         self.Extended_capabilities = ''
 
         try:
-            self.organization = oui[self.SA[0:8]]
+            self.organization = oui_dict[self.SA[0:8]]
         except KeyError:
             self.organization = "RANDOM"
 
@@ -61,7 +61,7 @@ class ProbePacket:
             ouid_str = ''
             for ouid in self.OUID:
                 try:
-                    ouid_str += oui['{}:{}:{}'.format(ouid[0:2], ouid[2:4], ouid[4:6])][:-1] + "|"
+                    ouid_str += oui_dict['{}:{}:{}'.format(ouid[0:2], ouid[2:4], ouid[4:6])][:-1] + "|"
                 except KeyError:
                     ouid_str += ouid + "|"
 
@@ -86,13 +86,6 @@ class Sniffer:
         if packet.haslayer(Dot11ProbeReq) and packet[Dot11].addr2 != self.filter:
             print(ProbePacket(packet))
 
-
-def get_dict_from_csv():
-    with open('oui.csv') as f:
-        return dict(filter(None, csv.reader(f)))
-
-
-oui = get_dict_from_csv()
 
 if __name__ == '__main__':
     mon, interface_mac = start_mon_iface()

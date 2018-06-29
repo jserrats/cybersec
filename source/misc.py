@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+import csv
 from geolite2 import geolite2
-from sys import argv, stdin
 
 
 def locate_ip(ip):
     info = geolite2.reader().get(ip)
+    location = ' - '
     try:
         location = info['country']['names']['en']
         location = location + ', ' + info['subdivisions'][0]['names']['en']
@@ -17,17 +17,9 @@ def locate_ip(ip):
         return location
 
 
-def main():
-    if len(argv) == 2:
-        ip = locate_ip(argv[1])
-    else:
-        ip = stdin.readline().replace("\n", "")
-
-    try:
-        print(locate_ip(ip))
-    except ValueError:
-        print("Not a valid IP")
+def get_dict_from_csv():
+    with open('oui.csv') as f:
+        return dict(filter(None, csv.reader(f)))
 
 
-if __name__ == "__main__":
-    main()
+oui_dict = get_dict_from_csv()

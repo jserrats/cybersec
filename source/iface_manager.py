@@ -10,6 +10,7 @@ def start_mon_iface():
         system('sudo airmon-ng start ' + iface)
         final_interfaces = netifaces.interfaces()
         new_interface = list(set(final_interfaces) - set(initial_interfaces))[0]
+        system('sudo ifconfig ' + new_interface + ' up')
         return new_interface, mon_mac
     else:
         return actual_mon, netifaces.ifaddresses(actual_mon)[netifaces.AF_LINK][0]['addr']
@@ -51,9 +52,9 @@ if __name__ == '__main__':
     actual_mon = get_mon_iface()
 
     if actual_mon is False:
-        print('Choose interface to monitor')
-        interface, interface_mac, null = choose_iface()
-        system('sudo airmon-ng start ' + interface)
+        print("\n\n=== No monitor interface found. Creating one ===\n\n")
+        start_mon_iface()
 
     else:
+        print("\n\n=== Stopping monitor interface ===\n\n")
         system('sudo airmon-ng stop ' + actual_mon)
